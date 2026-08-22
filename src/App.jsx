@@ -3,6 +3,7 @@ import Sidebar from "./components/Sidebar";
 import KelolaLayanan from "./pages/KelolaLayanan";
 import KelolaKlien from "./pages/KelolaKlien";
 import KelolaKaryawan from "./pages/KelolaKaryawan";
+import KelolaRole from "./pages/KelolaRole";
 
 export default function App() {
     const [activeTab, setActiveTab] = useState("layanan");
@@ -47,9 +48,10 @@ export default function App() {
                         {activeTab === "layanan" && <KelolaLayanan />}
                         {activeTab === "klien" && <KelolaKlien />}
                         {activeTab === "karyawan" && <KelolaKaryawan />}
+                        {activeTab === "posisi" && <KelolaRole />}
 
                         {/* Halaman Dummy */}
-                        {activeTab !== "layanan" && activeTab !== "klien" && activeTab !== "karyawan" && (
+                        {activeTab !== "layanan" && activeTab !== "klien" && activeTab !== "karyawan" && activeTab !== "posisi" && (
                             <div className="p-8">
                                 <h2 className="text-2xl font-bold capitalize">Halaman {activeTab}</h2>
                                 <p className="text-neutral-500 mt-2">Sedang dalam tahap pembuatan...</p>
