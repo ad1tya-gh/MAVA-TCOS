@@ -1,6 +1,6 @@
 import { useEffect, useState, useRef } from "react";
 import { supabase } from "../supabaseClient";
-import { Users, Plus, MoreVertical, Pencil, Trash2, X, Check, Mail, Shield, AlertTriangle } from "lucide-react";
+import { Users, Plus, MoreVertical, Pencil, Trash2, X, Check, Mail, CircleUser, AlertTriangle } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import MavaLoader from "../components/MavaLoader";
 
@@ -261,7 +261,7 @@ export default function KelolaKaryawan() {
 
                                 <div className="space-y-2 pt-3 border-t border-neutral-800/50">
                                     <div className="flex items-center gap-2 text-sm text-neutral-400">
-                                        <Shield className="w-4 h-4 text-[#DB3B96]" />
+                                        <CircleUser className="w-4.5 h-4.5 text-[#DB3B96]" />
                                         <span className="font-medium text-neutral-200">{item.roles?.role_name || "Tanpa Posisi"}</span>
                                     </div>
                                     <div className="flex items-center gap-2 text-sm text-neutral-400">
