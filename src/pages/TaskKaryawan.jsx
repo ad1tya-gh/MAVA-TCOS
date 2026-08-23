@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { supabase } from "../supabaseClient";
 import { CheckSquare, X, Send, Calendar, User, Briefcase, Building2, Link as LinkIcon, MessageSquare, FileUp } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -9,6 +9,8 @@ export default function TaskKaryawan() {
     const [loading, setLoading] = useState(true);
 
     // SIMULASI LOGIN KARYAWAN (Misal ID 2 adalah Adit - Web Dev)
+    // TODO: saat auth Supabase sudah aktif, ganti ini dengan ID user yang benar-benar login
+    // (misal dari supabase.auth.getUser() lalu di-mapping ke tabel users).
     const DUMMY_EMPLOYEE_ID = 2;
 
     // State Modal Detail & Update
@@ -23,42 +25,43 @@ export default function TaskKaryawan() {
         attachment_url: "",
     });
 
-    // State untuk file fisik
+    // State untuk file fisik. fileInputKey dipakai untuk "memaksa" reset tampilan
+    // nama file di elemen <input type="file"> setelah submit/tutup modal.
     const [selectedFile, setSelectedFile] = useState(null);
+    const [fileInputKey, setFileInputKey] = useState(0);
 
     // 1. FETCH DATA TUGAS KHUSUS KARYAWAN INI
-    useEffect(() => {
-        let ignore = false;
-        async function fetchMyTasks() {
-            setLoading(true);
-            try {
-                const { data, error } = await supabase
-                    .from("tasks")
-                    .select(
-                        `
-            *,
-            assigner:users!tasks_assigner_id_fkey(full_name),
-            service:services(service_name),
-            client:clients(client_name)
-          `,
-                    )
-                    .eq("assignee_id", DUMMY_EMPLOYEE_ID) // HANYA AMBIL TUGAS MILIKNYA SENDIRI
-                    .order("created_at", { ascending: false });
+    // Dibungkus useCallback (bukan didefinisikan di dalam useEffect) supaya bisa
+    // dipanggil ulang dari mana saja (misal setelah submit update progress),
+    // tapi tetap tidak memicu cascading render karena setState hanya terjadi
+    // di dalam callback async, bukan langsung di body effect.
+    const fetchMyTasks = useCallback(async () => {
+        setLoading(true);
+        try {
+            const { data, error } = await supabase
+                .from("tasks")
+                .select(
+                    `
+          *,
+          assigner:users!tasks_assigner_id_fkey(full_name),
+          service:services(service_name),
+          client:clients(client_name)
+        `,
+                )
+                .eq("assignee_id", DUMMY_EMPLOYEE_ID) // HANYA AMBIL TUGAS MILIKNYA SENDIRI
+                .order("created_at", { ascending: false });
 
-                if (!ignore && !error) {
-                    setTasks(data || []);
-                }
-            } catch (err) {
-                console.error("Error fetching my tasks:", err);
-            } finally {
-                if (!ignore) setLoading(false);
-            }
+            if (!error) setTasks(data || []);
+        } catch (err) {
+            console.error("Error fetching my tasks:", err);
+        } finally {
+            setLoading(false);
         }
-        fetchMyTasks();
-        return () => {
-            ignore = true;
-        };
     }, []);
+
+    useEffect(() => {
+        fetchMyTasks();
+    }, [fetchMyTasks]);
 
     // 2. HANDLERS MODAL
     const handleOpenModal = (task) => {
@@ -68,6 +71,8 @@ export default function TaskKaryawan() {
             notes: "", // Dikosongkan agar karyawan bisa mengetik log baru
             attachment_url: "",
         });
+        setSelectedFile(null);
+        setFileInputKey((k) => k + 1);
         setIsModalOpen(true);
     };
 
@@ -75,10 +80,11 @@ export default function TaskKaryawan() {
         if (!isSubmitting) {
             setIsModalOpen(false);
             setSelectedTask(null);
+            setSelectedFile(null);
+            setFileInputKey((k) => k + 1); // reset input file supaya tidak "nyangkut" ke task lain
         }
     };
 
-    // 3. SUBMIT UPDATE PROGRESS & SIMPAN LOG
     // 3. SUBMIT UPDATE PROGRESS & UPLOAD FILE
     const handleSubmitUpdate = async (e) => {
         e.preventDefault();
@@ -92,34 +98,31 @@ export default function TaskKaryawan() {
 
         setIsSubmitting(true);
 
-        try {
-            let finalFilePath = null;
+        // Path (bukan URL publik) disimpan terpisah supaya bisa dipakai untuk
+        // menghapus file dari storage kalau langkah setelahnya gagal.
+        let uploadedFilePath = null;
+        let finalFileUrl = null;
+        const previousStatus = selectedTask.status;
 
-            // PROSES UPLOAD FILE KE SUPABASE STORAGE
+        try {
+            // 1. UPLOAD FILE FISIK (jika ada) - dilakukan pertama karena tidak butuh rollback DB
             if (selectedFile) {
-                // 1. Buat nama file unik (gabungan waktu sekarang dan nama asli file)
                 const fileExt = selectedFile.name.split(".").pop();
                 const fileName = `${Date.now()}_${Math.random().toString(36).substring(7)}.${fileExt}`;
-                const filePath = `bukti_kerja/${fileName}`; // Dimasukkan ke dalam folder 'bukti_kerja'
+                uploadedFilePath = `bukti_kerja/${fileName}`;
 
-                // 2. Upload file fisik ke bucket 'task_attachments'
-                const { error: uploadError } = await supabase.storage.from("task_attachments").upload(filePath, selectedFile);
-
+                const { error: uploadError } = await supabase.storage.from("task_attachments").upload(uploadedFilePath, selectedFile);
                 if (uploadError) throw uploadError;
 
-                // 3. Dapatkan Link URL Publik dari file yang baru diupload
-                const { data: publicUrlData } = supabase.storage.from("task_attachments").getPublicUrl(filePath);
-
-                // Simpan URL tersebut ke variabel untuk dimasukkan ke database
-                finalFilePath = publicUrlData.publicUrl;
+                const { data: publicUrlData } = supabase.storage.from("task_attachments").getPublicUrl(uploadedFilePath);
+                finalFileUrl = publicUrlData.publicUrl;
             }
 
-            // UPDATE TABEL TASKS (Ubah status)
+            // 2. UPDATE STATUS TASK
             const { error: taskError } = await supabase.from("tasks").update({ status: formData.status }).eq("task_id", selectedTask.task_id);
-
             if (taskError) throw taskError;
 
-            // INSERT KE TABEL TASK_LOGS (Simpan history dan link)
+            // 3. INSERT LOG (riwayat + bukti kerja)
             const { error: logError } = await supabase.from("task_logs").insert([
                 {
                     task_id: selectedTask.task_id,
@@ -127,17 +130,28 @@ export default function TaskKaryawan() {
                     status_changed: formData.status,
                     notes: formData.notes.trim() || null,
                     attachment_url: formData.attachment_url.trim() || null,
-                    attachment_file: finalFilePath, // <-- Menyimpan URL file fisik yang sukses diupload
+                    attachment_file: finalFileUrl,
                 },
             ]);
 
-            if (logError) throw logError;
+            if (logError) {
+                // ROLLBACK: kembalikan status task seperti semula karena log gagal tersimpan.
+                // Catatan: idealnya ini pakai satu Supabase RPC/transaction supaya benar-benar
+                // atomic, tapi untuk skala proyek ini, rollback manual ini cukup aman.
+                await supabase.from("tasks").update({ status: previousStatus }).eq("task_id", selectedTask.task_id);
+                throw logError;
+            }
 
-            // Bersihkan state file dan refresh data
             setSelectedFile(null);
+            setFileInputKey((k) => k + 1);
             await fetchMyTasks();
             setIsModalOpen(false);
         } catch (error) {
+            // Bersihkan file yang sudah terlanjur ke-upload kalau langkah selanjutnya gagal,
+            // supaya tidak jadi file "sampah" yang tidak pernah tereferensi di database.
+            if (uploadedFilePath) {
+                await supabase.storage.from("task_attachments").remove([uploadedFilePath]);
+            }
             alert("Gagal mengupdate progress: " + error.message);
         } finally {
             setIsSubmitting(false);
@@ -159,6 +173,8 @@ export default function TaskKaryawan() {
                 return "bg-neutral-800 text-neutral-400 border-neutral-700"; // To Do
         }
     };
+
+    const isOverdue = (task) => task.due_date && new Date(task.due_date) < new Date() && task.status !== "Completed";
 
     return (
         <div className="p-8 space-y-6 min-h-screen relative">
@@ -183,7 +199,6 @@ export default function TaskKaryawan() {
                         <div
                             key={task.task_id}
                             onClick={() => handleOpenModal(task)}
-                            // PERATURAN 1: Kartu interaktif sebagai trigger
                             className="cursor-pointer p-5 bg-neutral-900 border border-neutral-800 rounded-xl flex flex-col justify-between space-y-4 hover:border-[#DB3B96]/50 hover:shadow-lg hover:shadow-[#DB3B96]/5 transition-all active:scale-[0.98] group"
                         >
                             <div className="space-y-3">
@@ -213,7 +228,7 @@ export default function TaskKaryawan() {
                                         </span>
                                     </div>
                                     {task.due_date && (
-                                        <div className={`flex items-center gap-1 font-semibold ${new Date(task.due_date) < new Date() && task.status !== "Completed" ? "text-red-400" : "text-neutral-500"}`}>
+                                        <div className={`flex items-center gap-1 font-semibold ${isOverdue(task) ? "text-red-400" : "text-neutral-500"}`}>
                                             <Calendar className="w-3.5 h-3.5" />
                                             {new Date(task.due_date).toLocaleDateString("id-ID", { day: "numeric", month: "short" })}
                                         </div>
@@ -272,7 +287,8 @@ export default function TaskKaryawan() {
                                         </div>
                                         <div className="p-4 bg-neutral-950 border border-neutral-800 rounded-xl">
                                             <h4 className="text-xs font-bold text-neutral-500 uppercase mb-1">Tenggat Waktu</h4>
-                                            <p className={`text-sm font-medium ${new Date(selectedTask.due_date) < new Date() && selectedTask.status !== "Completed" ? "text-red-400" : "text-white"}`}>
+                                            {/* FIX: guard due_date null supaya tidak selalu dianggap "lewat" (1 Jan 1970) */}
+                                            <p className={`text-sm font-medium ${isOverdue(selectedTask) ? "text-red-400" : "text-white"}`}>
                                                 {selectedTask.due_date ? new Date(selectedTask.due_date).toLocaleDateString("id-ID", { dateStyle: "long" }) : "-"}
                                             </p>
                                         </div>
@@ -324,6 +340,7 @@ export default function TaskKaryawan() {
                                                 <FileUp className="w-3.5 h-3.5" /> Upload File / Foto (Opsional)
                                             </label>
                                             <input
+                                                key={fileInputKey}
                                                 type="file"
                                                 accept="image/png, image/jpeg, image/jpg, application/pdf, .doc, .docx"
                                                 onChange={(e) => setSelectedFile(e.target.files[0])}

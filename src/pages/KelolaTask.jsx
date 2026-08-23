@@ -1,8 +1,16 @@
-import { useEffect, useState, useRef } from "react";
+import { useCallback, useEffect, useState, useRef } from "react";
 import { supabase } from "../supabaseClient";
 import { Plus, MoreVertical, Pencil, Trash2, X, Check, AlertTriangle, Calendar, User, Briefcase, Building2, FileText, Link as LinkIcon, CheckCircle2, XCircle } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import MavaLoader from "../components/MavaLoader";
+
+const TASKS_SELECT = `
+    *,
+    assignee:users!tasks_assignee_id_fkey(full_name),
+    service:services(service_name),
+    client:clients(client_name),
+    task_logs(*)
+`;
 
 export default function KelolaTask() {
     const [tasks, setTasks] = useState([]);
@@ -32,31 +40,24 @@ export default function KelolaTask() {
         due_date: "",
     });
 
-    // 1. FETCH DATA UTAMA
+    // Refetch khusus daftar tasks (dipakai setelah tambah/edit/approval)
+    const fetchTasksList = useCallback(async () => {
+        const { data, error } = await supabase.from("tasks").select(TASKS_SELECT).order("created_at", { ascending: false });
+        if (!error) setTasks(data || []);
+        return { data, error };
+    }, []);
+
+    // 1. FETCH DATA UTAMA (sekali saat mount)
     useEffect(() => {
         let ignore = false;
         async function fetchData() {
             setLoading(true);
-            const delay = (ms) => new Promise((res) => setTimeout(res, ms));
-
             try {
                 const [tasksRes, empRes, srvRes, cliRes] = await Promise.all([
-                    supabase
-                        .from("tasks")
-                        .select(
-                            `
-            *,
-            assignee:users!tasks_assignee_id_fkey(full_name),
-            service:services(service_name),
-            client:clients(client_name),
-            task_logs(*)
-          `,
-                        )
-                        .order("created_at", { ascending: false }),
+                    supabase.from("tasks").select(TASKS_SELECT).order("created_at", { ascending: false }),
                     supabase.from("users").select("user_id, full_name").eq("is_active", true),
                     supabase.from("services").select("service_id, service_name"),
                     supabase.from("clients").select("client_id, client_name").eq("is_active", true),
-                    delay(500),
                 ]);
 
                 if (!ignore) {
@@ -121,12 +122,12 @@ export default function KelolaTask() {
         e.preventDefault();
         if (!formData.title.trim() || !formData.assignee_id) return;
         setIsProcessing(true);
+        // TODO: saat auth Supabase sudah aktif, ganti dengan ID manager yang login
         const managerId = 1; // Dummy Login Manager
 
-        if (modalMode === "add") {
-            const { data, error } = await supabase
-                .from("tasks")
-                .insert([
+        try {
+            if (modalMode === "add") {
+                const { error } = await supabase.from("tasks").insert([
                     {
                         title: formData.title.trim(),
                         description: formData.description.trim(),
@@ -137,30 +138,31 @@ export default function KelolaTask() {
                         due_date: formData.due_date || null,
                         status: "To Do",
                     },
-                ])
-                .select(`*, assignee:users!tasks_assignee_id_fkey(full_name), service:services(service_name), client:clients(client_name)`);
-
-            if (!error && data) setTasks((prev) => [data[0], ...prev]);
-        } else {
-            const { error } = await supabase
-                .from("tasks")
-                .update({
-                    title: formData.title.trim(),
-                    description: formData.description.trim(),
-                    assignee_id: formData.assignee_id,
-                    service_id: formData.service_id,
-                    client_id: formData.client_id || null,
-                    due_date: formData.due_date || null,
-                })
-                .eq("task_id", selectedTask.task_id);
-
-            if (!error) {
-                const { data } = await supabase.from("tasks").select(`*, assignee:users!tasks_assignee_id_fkey(full_name), service:services(service_name), client:clients(client_name)`).order("created_at", { ascending: false });
-                setTasks(data || []);
+                ]);
+                if (error) throw error;
+            } else {
+                const { error } = await supabase
+                    .from("tasks")
+                    .update({
+                        title: formData.title.trim(),
+                        description: formData.description.trim(),
+                        assignee_id: formData.assignee_id,
+                        service_id: formData.service_id,
+                        client_id: formData.client_id || null,
+                        due_date: formData.due_date || null,
+                    })
+                    .eq("task_id", selectedTask.task_id);
+                if (error) throw error;
             }
+
+            // Refetch lewat fungsi yang sama supaya task_logs tetap ikut termuat
+            await fetchTasksList();
+            setIsFormModalOpen(false);
+        } catch (error) {
+            alert("Gagal menyimpan tugas: " + error.message);
+        } finally {
+            setIsProcessing(false);
         }
-        setIsProcessing(false);
-        setIsFormModalOpen(false);
     };
 
     // 3. HANDLERS MODAL DELETE
@@ -179,6 +181,8 @@ export default function KelolaTask() {
             setTasks((prev) => prev.filter((t) => t.task_id !== selectedTask.task_id));
             setIsDeleteModalOpen(false);
             setSelectedTask(null);
+        } else {
+            alert("Gagal menghapus tugas: " + error.message);
         }
         setIsProcessing(false);
     };
@@ -186,6 +190,7 @@ export default function KelolaTask() {
     // 4. HANDLERS MODAL DETAIL & APPROVAL
     const handleOpenDetailModal = (task) => {
         setSelectedTask(task);
+        setActiveDropdown(null); // FIX: pastikan dropdown titik-tiga dari kartu lain ikut tertutup
         setIsDetailModalOpen(true);
     };
 
@@ -196,6 +201,8 @@ export default function KelolaTask() {
             setTasks((prev) => prev.map((t) => (t.task_id === selectedTask.task_id ? { ...t, status: newStatus } : t)));
             setSelectedTask({ ...selectedTask, status: newStatus });
             setIsDetailModalOpen(false); // Tutup modal setelah approval
+        } else {
+            alert("Gagal memperbarui status: " + error.message);
         }
         setIsProcessing(false);
     };
@@ -208,6 +215,8 @@ export default function KelolaTask() {
         { id: "In Review", label: "In Review", color: "border-purple-500", bg: "bg-purple-500/10" },
         { id: "Completed", label: "Completed", color: "border-emerald-500", bg: "bg-emerald-500/10" },
     ];
+
+    const isOverdue = (task) => task.due_date && new Date(task.due_date) < new Date() && task.status !== "Completed";
 
     return (
         <div className="p-8 space-y-6 min-h-screen relative flex flex-col">
@@ -313,7 +322,7 @@ export default function KelolaTask() {
                                                             <span className="text-neutral-300 truncate max-w-[100px]">{task.assignee?.full_name}</span>
                                                         </div>
                                                         {task.due_date && (
-                                                            <div className={`flex items-center gap-1 text-[11px] font-semibold ${new Date(task.due_date) < new Date() && task.status !== "Completed" ? "text-red-400" : "text-neutral-500"}`}>
+                                                            <div className={`flex items-center gap-1 text-[11px] font-semibold ${isOverdue(task) ? "text-red-400" : "text-neutral-500"}`}>
                                                                 <Calendar className="w-3 h-3" />
                                                                 {new Date(task.due_date).toLocaleDateString("id-ID", { day: "numeric", month: "short" })}
                                                             </div>
@@ -370,13 +379,12 @@ export default function KelolaTask() {
                                         <p className="text-sm text-neutral-300 leading-relaxed whitespace-pre-wrap">{selectedTask.description || "Tidak ada deskripsi detail."}</p>
                                     </div>
 
-                                    {/* Area Dummy untuk Log (Akan aktif setelah modul Karyawan dibuat) */}
-                                    {/* TAMPILKAN LOG REAL DARI KARYAWAN */}
+                                    {/* RIWAYAT LOG DARI KARYAWAN, TERURUT TERBARU DULU */}
                                     <div className="pt-4">
                                         <h4 className="text-xs font-bold text-neutral-500 uppercase tracking-wider mb-3">Riwayat Pengerjaan & Bukti Kerja</h4>
                                         <div className="space-y-3">
                                             {selectedTask.task_logs?.length > 0 ? (
-                                                selectedTask.task_logs
+                                                [...selectedTask.task_logs]
                                                     .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
                                                     .map((log) => (
                                                         <div key={log.log_id} className="p-4 bg-neutral-950 border border-neutral-800 rounded-xl">
