@@ -1,6 +1,6 @@
 import { useEffect, useState, useRef } from "react";
 import { supabase } from "../supabaseClient";
-import { Users, Plus, MoreVertical, Pencil, Trash2, X, Check, Mail, CircleUser, AlertTriangle } from "lucide-react";
+import { Users, Plus, MoreVertical, Pencil, Trash2, X, Check, Mail, CircleUser, AlertTriangle, Eye, EyeOff } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import MavaLoader from "../components/MavaLoader";
 
@@ -25,6 +25,7 @@ export default function KelolaKaryawan() {
         is_active: true,
     });
     const [submitting, setSubmitting] = useState(false);
+    const [showPassword, setShowPassword] = useState(false);
 
     // State Modal Hapus
     const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
@@ -119,7 +120,7 @@ export default function KelolaKaryawan() {
                 .insert([
                     {
                         full_name: formData.full_name.trim(),
-                        email: formData.email.trim(),
+                        email: formData.email.trim().toLowerCase(),
                         password: formData.password.trim(),
                         role_id: formData.role_id,
                         is_active: formData.is_active,
@@ -137,7 +138,7 @@ export default function KelolaKaryawan() {
                 .from("users")
                 .update({
                     full_name: formData.full_name.trim(),
-                    email: formData.email.trim(),
+                    email: formData.email.trim().toLowerCase(),
                     password: formData.password.trim(),
                     role_id: formData.role_id,
                     is_active: formData.is_active,
@@ -327,13 +328,16 @@ export default function KelolaKaryawan() {
                                         Password <span className="text-[#DB3B96]">*</span>
                                     </label>
                                     <input
-                                        type="password"
+                                        type={showPassword ? "text" : "password"}
                                         required
                                         placeholder="Minimal 6 karakter"
                                         value={formData.password}
                                         onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                                         className="w-full bg-neutral-950 border border-neutral-800 rounded-xl px-4 py-2.5 text-sm text-white placeholder-neutral-500 focus:outline-none focus:border-[#DB3B96] transition-colors"
                                     />
+                                    <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute top-[calc(50%+20px)] right-8 flex items-center text-neutral-500 hover:text-white transition-colors cursor-pointer">
+                                        {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                                    </button>
                                 </div>
 
                                 <div>

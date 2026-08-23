@@ -12,7 +12,7 @@ const TASKS_SELECT = `
     task_logs(*)
 `;
 
-export default function KelolaTask() {
+export default function KelolaTask({ managerId }) {
     const [tasks, setTasks] = useState([]);
     const [employees, setEmployees] = useState([]);
     const [services, setServices] = useState([]);
@@ -122,9 +122,6 @@ export default function KelolaTask() {
         e.preventDefault();
         if (!formData.title.trim() || !formData.assignee_id) return;
         setIsProcessing(true);
-        // TODO: saat auth Supabase sudah aktif, ganti dengan ID manager yang login
-        const managerId = 1; // Dummy Login Manager
-
         try {
             if (modalMode === "add") {
                 const { error } = await supabase.from("tasks").insert([

@@ -4,15 +4,13 @@ import { CheckSquare, X, Send, Calendar, User, Briefcase, Building2, Link as Lin
 import { motion, AnimatePresence } from "framer-motion";
 import MavaLoader from "../components/MavaLoader";
 
-export default function TaskKaryawan() {
+export default function TaskKaryawan({ employeeId }) {
     const [tasks, setTasks] = useState([]);
     const [loading, setLoading] = useState(true);
 
     // SIMULASI LOGIN KARYAWAN (Misal ID 2 adalah Adit - Web Dev)
     // TODO: saat auth Supabase sudah aktif, ganti ini dengan ID user yang benar-benar login
     // (misal dari supabase.auth.getUser() lalu di-mapping ke tabel users).
-    const DUMMY_EMPLOYEE_ID = 2;
-
     // State Modal Detail & Update
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [selectedTask, setSelectedTask] = useState(null);
@@ -48,7 +46,7 @@ export default function TaskKaryawan() {
           client:clients(client_name)
         `,
                 )
-                .eq("assignee_id", DUMMY_EMPLOYEE_ID) // HANYA AMBIL TUGAS MILIKNYA SENDIRI
+                .eq("assignee_id", employeeId) // HANYA AMBIL TUGAS MILIKNYA SENDIRI
                 .order("created_at", { ascending: false });
 
             if (!error) setTasks(data || []);
@@ -126,7 +124,7 @@ export default function TaskKaryawan() {
             const { error: logError } = await supabase.from("task_logs").insert([
                 {
                     task_id: selectedTask.task_id,
-                    user_id: DUMMY_EMPLOYEE_ID,
+                    user_id: employeeId,
                     status_changed: formData.status,
                     notes: formData.notes.trim() || null,
                     attachment_url: formData.attachment_url.trim() || null,

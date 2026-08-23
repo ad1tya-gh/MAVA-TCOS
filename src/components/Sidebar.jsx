@@ -1,7 +1,7 @@
-import { LayoutDashboard, CheckSquare, Users, Building2, Briefcase, BarChart3, UserRoundCog } from "lucide-react";
+import { LayoutDashboard, CheckSquare, Users, Building2, Briefcase, BarChart3, UserRoundCog, LogOut } from "lucide-react";
 
 // Tambahkan prop 'userRole' untuk menerima status login dari App.jsx
-export default function Sidebar({ activeTab, setActiveTab, userRole }) {
+export default function Sidebar({ activeTab, setActiveTab, userRole, userName, onLogout }) {
     const menuItems = [
         { id: "dashboard", label: "Dashboard", icon: LayoutDashboard, allowed: ["Manager", "Karyawan"] },
         { id: "tasks", label: "Semua Task", icon: CheckSquare, allowed: ["Manager", "Karyawan"] },
@@ -46,13 +46,16 @@ export default function Sidebar({ activeTab, setActiveTab, userRole }) {
             </div>
 
             {/* Profile Ringkas */}
-            <div className="p-4 border-t border-neutral-800 m-4 bg-neutral-950 rounded-xl border">
-                <div className="flex items-center gap-3">
+            <div className="px-2 py-3 border-t border-neutral-800 mb-4 m-2 bg-neutral-950 rounded-xl border">
+                <div className="flex items-center gap-3 justify-around">
                     <div className="w-9 h-9 rounded-full bg-linear-to-tr from-[#DB3B96] to-[#8B5EA8] text-white flex items-center justify-center font-bold text-sm shadow-inner">{userRole === "Manager" ? "MG" : "KY"}</div>
                     <div className="overflow-hidden">
-                        <p className="text-sm font-semibold text-white truncate">{userRole === "Manager" ? "Atasan / Manager" : "Staf Karyawan"}</p>
+                        <p className="text-sm font-semibold text-white truncate">{userName || "Pengguna"}</p>
                         <p className="text-xs text-[#DB3B96] font-medium truncate">{userRole}</p>
                     </div>
+                    <button onClick={onLogout} title="Keluar / Log Out" className="shrink-0 cursor-pointer p-2 rounded-xl text-neutral-400 hover:text-red-400 hover:bg-red-500/10 active:scale-90 transition-all">
+                        <LogOut className="w-4 h-4" />
+                    </button>
                 </div>
             </div>
         </aside>
