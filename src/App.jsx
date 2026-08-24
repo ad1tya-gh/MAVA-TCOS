@@ -6,10 +6,11 @@ import KelolaKaryawan from "./pages/KelolaKaryawan";
 import KelolaRole from "./pages/KelolaRole";
 import KelolaTask from "./pages/KelolaTask";
 import TaskKaryawan from "./pages/TaskKaryawan";
-import Login from "./pages/Login"; // Import halaman Login
+import Login from "./pages/Login";
+import Dashboard from "./pages/Dashboard";
 
 export default function App() {
-    const [activeTab, setActiveTab] = useState("tasks");
+    const [activeTab, setActiveTab] = useState("dashboard");
     const [loggedInUser, setLoggedInUser] = useState(null);
 
     // Cek apakah ada sesi login tersimpan di localStorage saat web dibuka
@@ -68,12 +69,13 @@ export default function App() {
                         {activeTab === "klien" && <KelolaKlien />}
                         {activeTab === "karyawan" && <KelolaKaryawan />}
                         {activeTab === "posisi" && <KelolaRole />}
+                        {activeTab === "dashboard" && <Dashboard />}
 
                         {/* LOGIKA PERCABANGAN TASK DENGAN MENGIRIM ID USER ASLI */}
                         {activeTab === "tasks" && isManager && <KelolaTask managerId={loggedInUser.user_id} />}
                         {activeTab === "tasks" && !isManager && <TaskKaryawan employeeId={loggedInUser.user_id} />}
 
-                        {activeTab !== "layanan" && activeTab !== "klien" && activeTab !== "karyawan" && activeTab !== "posisi" && activeTab !== "tasks" && (
+                        {activeTab !== "layanan" && activeTab !== "klien" && activeTab !== "karyawan" && activeTab !== "posisi" && activeTab !== "tasks" && activeTab !== "dashboard" && (
                             <div className="p-8">
                                 <h2 className="text-2xl font-bold capitalize">Halaman {activeTab}</h2>
                                 <p className="text-neutral-500 mt-2">Sedang dalam tahap pembuatan...</p>
