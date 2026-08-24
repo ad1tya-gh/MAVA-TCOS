@@ -195,30 +195,30 @@ export default function Laporan() {
                 <>
                     {/* Panel Filter */}
                     <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="bg-neutral-900/50 border border-neutral-800 rounded-2xl p-5 flex flex-wrap gap-4 items-end">
-                        <div className="flex-1 min-w-[150px]">
-                            <label className="block text-xs font-semibold text-neutral-400 mb-2 flex items-center gap-1.5">
+                        <div className="flex-1 min-w-37.5">
+                            <label className="text-xs font-semibold text-neutral-400 mb-2 flex items-center gap-1.5">
                                 <Calendar className="w-3.5 h-3.5" /> Tanggal Mulai
                             </label>
                             <input
                                 type="date"
                                 value={startDate}
                                 onChange={(e) => setStartDate(e.target.value)}
-                                className="w-full bg-neutral-950 border border-neutral-800 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-[#DB3B96] [color-scheme:dark]"
+                                className="w-full bg-neutral-950 border border-neutral-800 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-[#DB3B96] scheme-dark"
                             />
                         </div>
-                        <div className="flex-1 min-w-[150px]">
-                            <label className="block text-xs font-semibold text-neutral-400 mb-2 flex items-center gap-1.5">
+                        <div className="flex-1 min-w-37.5">
+                            <label className="text-xs font-semibold text-neutral-400 mb-2 flex items-center gap-1.5">
                                 <Calendar className="w-3.5 h-3.5" /> Tanggal Akhir
                             </label>
                             <input
                                 type="date"
                                 value={endDate}
                                 onChange={(e) => setEndDate(e.target.value)}
-                                className="w-full bg-neutral-950 border border-neutral-800 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-[#DB3B96] [color-scheme:dark]"
+                                className="w-full bg-neutral-950 border border-neutral-800 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-[#DB3B96] scheme-dark"
                             />
                         </div>
-                        <div className="flex-1 min-w-[150px]">
-                            <label className="block text-xs font-semibold text-neutral-400 mb-2 flex items-center gap-1.5">
+                        <div className="flex-1 min-w-37.5">
+                            <label className="text-xs font-semibold text-neutral-400 mb-2 flex items-center gap-1.5">
                                 <Briefcase className="w-3.5 h-3.5" /> Kategori Layanan
                             </label>
                             <select
@@ -234,8 +234,8 @@ export default function Laporan() {
                                 ))}
                             </select>
                         </div>
-                        <div className="flex-1 min-w-[150px]">
-                            <label className="block text-xs font-semibold text-neutral-400 mb-2 flex items-center gap-1.5">
+                        <div className="flex-1 min-w-37.5">
+                            <label className="text-xs font-semibold text-neutral-400 mb-2 flex items-center gap-1.5">
                                 <Filter className="w-3.5 h-3.5" /> Status
                             </label>
                             <select

@@ -238,7 +238,7 @@ export default function KelolaKaryawan() {
                                             {item.full_name.substring(0, 2)}
                                         </div>
                                         <div>
-                                            <h3 className="text-base font-bold text-white truncate max-w-[150px]">{item.full_name}</h3>
+                                            <h3 className="text-base font-bold text-white truncate max-w-37.5">{item.full_name}</h3>
                                             <span
                                                 className={`text-[11px] font-medium px-2 py-0.5 rounded-md mt-1 inline-block ${item.is_active ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20" : "bg-neutral-800 text-neutral-400 border border-neutral-700"}`}
                                             >
@@ -386,7 +386,7 @@ export default function KelolaKaryawan() {
                                     <label className="text-sm font-medium text-neutral-300">Status Akun Aktif</label>
                                     <label className="relative inline-flex items-center cursor-pointer hover:opacity-80 transition-opacity">
                                         <input type="checkbox" className="sr-only peer" checked={formData.is_active} onChange={(e) => setFormData({ ...formData, is_active: e.target.checked })} />
-                                        <div className="w-11 h-6 bg-neutral-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#DB3B96]"></div>
+                                        <div className="w-11 h-6 bg-neutral-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-0.5 after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#DB3B96]"></div>
                                     </label>
                                 </div>
 

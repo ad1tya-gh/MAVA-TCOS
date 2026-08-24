@@ -55,7 +55,7 @@ export default function TaskKaryawan({ employeeId }) {
         } finally {
             setLoading(false);
         }
-    }, []);
+    }, [employeeId]);
 
     useEffect(() => {
         fetchMyTasks();
@@ -319,7 +319,7 @@ export default function TaskKaryawan({ employeeId }) {
                                         </div>
 
                                         <div>
-                                            <label className="block text-xs font-semibold text-neutral-400 mb-2 flex items-center gap-1.5">
+                                            <label className="text-xs font-semibold text-neutral-400 mb-2 flex items-center gap-1.5">
                                                 <LinkIcon className="w-3.5 h-3.5" /> Supporting Data (Link)
                                             </label>
                                             <input
@@ -334,7 +334,7 @@ export default function TaskKaryawan({ employeeId }) {
 
                                         {/* Upload File / Foto */}
                                         <div>
-                                            <label className="block text-xs font-semibold text-neutral-400 mb-2 flex items-center gap-1.5">
+                                            <label className="text-xs font-semibold text-neutral-400 mb-2 flex items-center gap-1.5">
                                                 <FileUp className="w-3.5 h-3.5" /> Upload File / Foto (Opsional)
                                             </label>
                                             <input
@@ -349,7 +349,7 @@ export default function TaskKaryawan({ employeeId }) {
                                         </div>
 
                                         <div>
-                                            <label className="block text-xs font-semibold text-neutral-400 mb-2 flex items-center gap-1.5">
+                                            <label className="text-xs font-semibold text-neutral-400 mb-2 flex items-center gap-1.5">
                                                 <MessageSquare className="w-3.5 h-3.5" /> Catatan Pengerjaan
                                             </label>
                                             <textarea

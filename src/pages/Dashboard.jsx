@@ -136,7 +136,7 @@ export default function Dashboard({ userRole, userId }) {
             </div>
 
             {/* GRAFIK 1: BEBAN KERJA AKTIF / KARYAWAN */}
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.4 }} className="bg-neutral-900/50 border border-neutral-800 rounded-2xl p-6 h-[400px]">
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.4 }} className="bg-neutral-900/50 border border-neutral-800 rounded-2xl p-6 h-100">
                 <h3 className="text-sm font-bold text-white mb-6 uppercase tracking-wider">{isManager ? "Beban Kerja Aktif per Karyawan" : "Distribusi Tugas Saya (Belum Selesai)"}</h3>
                 {chartData.length > 0 ? (
                     <ResponsiveContainer width="100%" height="100%">
@@ -159,7 +159,7 @@ export default function Dashboard({ userRole, userId }) {
 
             {/* GRAFIK 2: TUGAS SELESAI (HANYA MUNCUL UNTUK MANAGER) */}
             {isManager && (
-                <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.5 }} className="bg-neutral-900/50 border border-neutral-800 rounded-2xl p-6 h-[400px]">
+                <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.5 }} className="bg-neutral-900/50 border border-neutral-800 rounded-2xl p-6 h-100">
                     <h3 className="text-sm font-bold text-white mb-6 uppercase tracking-wider">Produktivitas Selesai per Karyawan</h3>
                     {completedChartData.length > 0 ? (
                         <ResponsiveContainer width="100%" height="100%">
