@@ -1,6 +1,6 @@
 import { useEffect, useState, useRef } from "react";
 import { supabase } from "../supabaseClient";
-import { Building2, Plus, MoreVertical, Pencil, Trash2, X, Check, Phone, BriefcaseBusiness, AlertTriangle } from "lucide-react";
+import { Building2, Plus, MoreVertical, Pencil, Trash2, X, Check, Phone, BriefcaseBusiness, AlertTriangle, Search } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import MavaLoader from "../components/MavaLoader";
 
@@ -28,6 +28,9 @@ export default function KelolaKlien() {
     const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
     const [clientToDelete, setClientToDelete] = useState(null);
     const [isDeleting, setIsDeleting] = useState(false);
+
+    // State Search
+    const [searchTerm, setSearchTerm] = useState("");
 
     // 1. FETCH DATA (Aman dari Race Condition)
     useEffect(() => {
@@ -179,6 +182,9 @@ export default function KelolaKlien() {
         setIsDeleting(false);
     };
 
+    // 5. FILTER CLIENTS BASED ON SEARCH TERM
+    const filteredClients = clients.filter((client) => client.client_name.toLowerCase().includes(searchTerm.toLowerCase()) || client.company_name.toLowerCase().includes(searchTerm.toLowerCase()));
+
     return (
         <div className="p-8 space-y-6 min-h-screen relative">
             {/* Header */}
@@ -196,6 +202,21 @@ export default function KelolaKlien() {
                 </button>
             </div>
 
+            {/* SEARCH */}
+            <div className="relative mb-6">
+                <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                    <Search className="w-4 h-4 text-neutral-500" />
+                </div>
+                <input
+                    type="text"
+                    placeholder="Cari nama atau email karyawan..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="w-full bg-neutral-900 border border-neutral-800 rounded-xl pl-11 pr-4 py-2.5 text-sm text-white placeholder-neutral-500 focus:outline-none focus:border-[#DB3B96] transition-colors"
+                />
+            </div>
+            {/* END SEARCH */}
+
             {/* Konten Loading / Grid */}
             {loading ? (
                 <MavaLoader text="Mengambil data klien..." />
@@ -207,7 +228,7 @@ export default function KelolaKlien() {
                 </div>
             ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4" ref={dropdownRef}>
-                    {clients.map((item) => {
+                    {filteredClients.map((item) => {
                         const isDropdownOpen = activeDropdown === item.client_id;
 
                         return (

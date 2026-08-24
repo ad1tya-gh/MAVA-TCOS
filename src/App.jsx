@@ -70,7 +70,7 @@ export default function App() {
                         {activeTab === "klien" && <KelolaKlien />}
                         {activeTab === "karyawan" && <KelolaKaryawan />}
                         {activeTab === "posisi" && <KelolaRole />}
-                        {activeTab === "dashboard" && <Dashboard />}
+                        {activeTab === "dashboard" && <Dashboard userId={loggedInUser.user_id} userRole={userRole} />}
                         {activeTab === "laporan" && <Laporan />}
 
                         {/* LOGIKA PERCABANGAN TASK DENGAN MENGIRIM ID USER ASLI */}

@@ -1,6 +1,6 @@
 import { useEffect, useState, useRef } from "react";
 import { supabase } from "../supabaseClient";
-import { Users, Plus, MoreVertical, Pencil, Trash2, X, Check, Mail, CircleUser, AlertTriangle, Eye, EyeOff } from "lucide-react";
+import { Users, Plus, MoreVertical, Pencil, Trash2, X, Check, Mail, CircleUser, AlertTriangle, Eye, EyeOff, Search } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import MavaLoader from "../components/MavaLoader";
 
@@ -31,6 +31,9 @@ export default function KelolaKaryawan() {
     const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
     const [employeeToDelete, setEmployeeToDelete] = useState(null);
     const [isDeleting, setIsDeleting] = useState(false);
+
+    // State Search
+    const [searchTerm, setSearchTerm] = useState("");
 
     // 1. FETCH DATA USERS & ROLES
     useEffect(() => {
@@ -180,6 +183,9 @@ export default function KelolaKaryawan() {
         setIsDeleting(false);
     };
 
+    // 5. FILTER EMPLOYEES BASED ON SEARCH TERM
+    const filteredEmployees = employees.filter((emp) => emp.full_name.toLowerCase().includes(searchTerm.toLowerCase()) || emp.email.toLowerCase().includes(searchTerm.toLowerCase()));
+
     return (
         <div className="p-8 space-y-6 min-h-screen relative">
             <div className="flex items-center justify-between">
@@ -196,6 +202,21 @@ export default function KelolaKaryawan() {
                 </button>
             </div>
 
+            {/* SEARCH */}
+            <div className="relative mb-6">
+                <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                    <Search className="w-4 h-4 text-neutral-500" />
+                </div>
+                <input
+                    type="text"
+                    placeholder="Cari nama atau email karyawan..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="w-full bg-neutral-900 border border-neutral-800 rounded-xl pl-11 pr-4 py-2.5 text-sm text-white placeholder-neutral-500 focus:outline-none focus:border-[#DB3B96] transition-colors"
+                />
+            </div>
+            {/* END SEARCH */}
+
             {loading ? (
                 <MavaLoader text="Sinkronisasi data karyawan..." />
             ) : employees.length === 0 ? (
@@ -206,7 +227,7 @@ export default function KelolaKaryawan() {
                 </div>
             ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4" ref={dropdownRef}>
-                    {employees.map((item) => {
+                    {filteredEmployees.map((item) => {
                         const isDropdownOpen = activeDropdown === item.user_id;
 
                         return (
