@@ -8,6 +8,7 @@ import KelolaTask from "./pages/KelolaTask";
 import TaskKaryawan from "./pages/TaskKaryawan";
 import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
+import Laporan from "./pages/Laporan";
 
 export default function App() {
     const [activeTab, setActiveTab] = useState("dashboard");
@@ -70,12 +71,13 @@ export default function App() {
                         {activeTab === "karyawan" && <KelolaKaryawan />}
                         {activeTab === "posisi" && <KelolaRole />}
                         {activeTab === "dashboard" && <Dashboard />}
+                        {activeTab === "laporan" && <Laporan />}
 
                         {/* LOGIKA PERCABANGAN TASK DENGAN MENGIRIM ID USER ASLI */}
                         {activeTab === "tasks" && isManager && <KelolaTask managerId={loggedInUser.user_id} />}
                         {activeTab === "tasks" && !isManager && <TaskKaryawan employeeId={loggedInUser.user_id} />}
 
-                        {activeTab !== "layanan" && activeTab !== "klien" && activeTab !== "karyawan" && activeTab !== "posisi" && activeTab !== "tasks" && activeTab !== "dashboard" && (
+                        {activeTab !== "layanan" && activeTab !== "klien" && activeTab !== "karyawan" && activeTab !== "posisi" && activeTab !== "tasks" && activeTab !== "dashboard" && activeTab !== "laporan" && (
                             <div className="p-8">
                                 <h2 className="text-2xl font-bold capitalize">Halaman {activeTab}</h2>
                                 <p className="text-neutral-500 mt-2">Sedang dalam tahap pembuatan...</p>
