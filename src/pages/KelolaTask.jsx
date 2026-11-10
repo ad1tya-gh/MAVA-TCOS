@@ -3,6 +3,7 @@ import { supabase } from "../supabaseClient";
 import { Plus, MoreVertical, Pencil, Trash2, X, Check, AlertTriangle, Calendar, User, Briefcase, Building2, FileText, Link as LinkIcon, CheckCircle2, XCircle } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import MavaLoader from "../components/MavaLoader";
+import CreatableSelect from "../components/CreatableSelect";
 
 const TASKS_SELECT = `
     *,
@@ -90,6 +91,51 @@ export default function KelolaTask({ managerId }) {
     }, []);
 
     // 2. HANDLERS MODAL FORM (TAMBAH/EDIT)
+    const handleCreateService = async (newServiceName) => {
+        try {
+            const { data, error } = await supabase
+                .from("services")
+                .insert([{ service_name: newServiceName.trim(), description: "" }])
+                .select()
+                .single();
+
+            if (error) throw error;
+            if (data) {
+                setServices((prev) => [...prev, data]);
+                return data;
+            }
+        } catch (err) {
+            alert("Gagal menambahkan layanan baru: " + err.message);
+            return null;
+        }
+    };
+
+    const handleCreateClient = async (newClientName) => {
+        try {
+            const { data, error } = await supabase
+                .from("clients")
+                .insert([
+                    {
+                        client_name: newClientName.trim(),
+                        company_name: "",
+                        contact_phone: "",
+                        is_active: true,
+                    },
+                ])
+                .select()
+                .single();
+
+            if (error) throw error;
+            if (data) {
+                setClients((prev) => [data, ...prev]);
+                return data;
+            }
+        } catch (err) {
+            alert("Gagal menambahkan klien baru: " + err.message);
+            return null;
+        }
+    };
+
     const handleOpenAddModal = () => {
         setModalMode("add");
         setFormData({ title: "", description: "", assignee_id: "", service_id: "", client_id: "", due_date: "" });
@@ -477,9 +523,9 @@ export default function KelolaTask({ managerId }) {
                             initial={{ opacity: 0, scale: 0.95 }}
                             animate={{ opacity: 1, scale: 1 }}
                             exit={{ opacity: 0, scale: 0.95 }}
-                            className="relative w-full max-w-lg bg-neutral-900 border border-neutral-800 rounded-2xl shadow-2xl overflow-hidden z-10"
+                            className="relative w-full max-w-lg bg-neutral-900 border border-neutral-800 rounded-2xl shadow-2xl z-10"
                         >
-                            <div className="flex items-center justify-between p-5 border-b border-neutral-800">
+                            <div className="flex items-center justify-between p-5 border-b border-neutral-800 rounded-t-2xl">
                                 <h3 className="text-lg font-bold text-white">{modalMode === "add" ? "Delegasikan Tugas Baru" : "Edit Instruksi Tugas"}</h3>
                                 <button onClick={handleCloseFormModal} className="cursor-pointer p-1 rounded-lg text-neutral-400 hover:text-white hover:bg-neutral-800 active:scale-90 transition-all">
                                     <X className="w-5 h-5" />
@@ -536,38 +582,36 @@ export default function KelolaTask({ managerId }) {
                                 <div className="grid grid-cols-2 gap-4">
                                     <div>
                                         <label className="block text-xs font-semibold text-neutral-300 tracking-wide mb-2">Klien (Opsional)</label>
-                                        <select
+                                        <CreatableSelect
+                                            options={clients}
+                                            valueKey="client_id"
+                                            labelKey="client_name"
                                             value={formData.client_id}
-                                            onChange={(e) => setFormData({ ...formData, client_id: e.target.value })}
-                                            className="cursor-pointer w-full bg-neutral-950 border border-neutral-800 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-[#DB3B96] transition-colors appearance-none"
-                                        >
-                                            <option value="">-- Internal / Tanpa Klien --</option>
-                                            {clients.map((cli) => (
-                                                <option key={cli.client_id} value={cli.client_id}>
-                                                    {cli.client_name}
-                                                </option>
-                                            ))}
-                                        </select>
+                                            onChange={(val) => setFormData({ ...formData, client_id: val })}
+                                            onCreate={handleCreateClient}
+                                            placeholder="Pilih / ketik klien baru..."
+                                            createLabel="Tambah Klien"
+                                            allowClear={true}
+                                            clearLabel="-- Internal / Tanpa Klien --"
+                                            icon={Building2}
+                                        />
                                     </div>
                                     <div>
                                         <label className="block text-xs font-semibold text-neutral-300 tracking-wide mb-2">
                                             Jenis Layanan <span className="text-[#DB3B96]">*</span>
                                         </label>
-                                        <select
+                                        <CreatableSelect
                                             required
+                                            options={services}
+                                            valueKey="service_id"
+                                            labelKey="service_name"
                                             value={formData.service_id}
-                                            onChange={(e) => setFormData({ ...formData, service_id: e.target.value })}
-                                            className="cursor-pointer w-full bg-neutral-950 border border-neutral-800 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-[#DB3B96] transition-colors appearance-none"
-                                        >
-                                            <option value="" disabled>
-                                                -- Pilih Kategori --
-                                            </option>
-                                            {services.map((srv) => (
-                                                <option key={srv.service_id} value={srv.service_id}>
-                                                    {srv.service_name}
-                                                </option>
-                                            ))}
-                                        </select>
+                                            onChange={(val) => setFormData({ ...formData, service_id: val })}
+                                            onCreate={handleCreateService}
+                                            placeholder="Pilih / ketik layanan baru..."
+                                            createLabel="Tambah Layanan"
+                                            icon={Briefcase}
+                                        />
                                     </div>
                                 </div>
 

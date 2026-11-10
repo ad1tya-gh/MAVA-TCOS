@@ -3,6 +3,7 @@ import { supabase } from "../supabaseClient";
 import { Users, Plus, MoreVertical, Pencil, Trash2, X, Check, Mail, CircleUser, AlertTriangle, Eye, EyeOff, Search } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import MavaLoader from "../components/MavaLoader";
+import CreatableSelect from "../components/CreatableSelect";
 
 export default function KelolaKaryawan() {
     const [employees, setEmployees] = useState([]);
@@ -80,6 +81,25 @@ export default function KelolaKaryawan() {
     }, []);
 
     // 2. MODAL FORM HANDLERS
+    const handleCreateRole = async (newRoleName) => {
+        try {
+            const { data, error } = await supabase
+                .from("roles")
+                .insert([{ role_name: newRoleName.trim(), description: "" }])
+                .select()
+                .single();
+
+            if (error) throw error;
+            if (data) {
+                setRoles((prev) => [...prev, data]);
+                return data;
+            }
+        } catch (err) {
+            alert("Gagal menambahkan posisi baru: " + err.message);
+            return null;
+        }
+    };
+
     const handleOpenAddModal = () => {
         setModalMode("add");
         setSelectedId(null);
@@ -306,9 +326,9 @@ export default function KelolaKaryawan() {
                             initial={{ opacity: 0, scale: 0.95, y: 10 }}
                             animate={{ opacity: 1, scale: 1, y: 0 }}
                             exit={{ opacity: 0, scale: 0.95, y: 10 }}
-                            className="relative w-full max-w-md bg-neutral-900 border border-neutral-800 rounded-2xl shadow-2xl overflow-hidden z-10"
+                            className="relative w-full max-w-md bg-neutral-900 border border-neutral-800 rounded-2xl shadow-2xl z-10"
                         >
-                            <div className="flex items-center justify-between p-5 border-b border-neutral-800">
+                            <div className="flex items-center justify-between p-5 border-b border-neutral-800 rounded-t-2xl">
                                 <h3 className="text-lg font-bold text-white">{modalMode === "add" ? "Tambah Karyawan" : "Edit Karyawan"}</h3>
                                 <button onClick={handleCloseModal} className="cursor-pointer p-1 rounded-lg text-neutral-400 hover:text-white hover:bg-neutral-800 active:scale-90 transition-all">
                                     <X className="w-5 h-5" />
@@ -365,21 +385,18 @@ export default function KelolaKaryawan() {
                                     <label className="block text-xs font-semibold text-neutral-300 tracking-wide mb-2">
                                         Role / Posisi <span className="text-[#DB3B96]">*</span>
                                     </label>
-                                    <select
+                                    <CreatableSelect
                                         required
+                                        options={roles}
+                                        valueKey="role_id"
+                                        labelKey="role_name"
                                         value={formData.role_id}
-                                        onChange={(e) => setFormData({ ...formData, role_id: e.target.value })}
-                                        className="cursor-pointer w-full bg-neutral-950 border border-neutral-800 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-[#DB3B96] transition-colors appearance-none"
-                                    >
-                                        <option value="" disabled>
-                                            -- Pilih Posisi --
-                                        </option>
-                                        {roles.map((r) => (
-                                            <option key={r.role_id} value={r.role_id}>
-                                                {r.role_name}
-                                            </option>
-                                        ))}
-                                    </select>
+                                        onChange={(val) => setFormData({ ...formData, role_id: val })}
+                                        onCreate={handleCreateRole}
+                                        placeholder="Pilih atau ketik posisi baru..."
+                                        createLabel="Tambah Posisi"
+                                        icon={CircleUser}
+                                    />
                                 </div>
 
                                 <div className="flex items-center justify-between pt-2">

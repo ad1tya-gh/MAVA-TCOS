@@ -4,7 +4,7 @@ import { Building2, Plus, MoreVertical, Pencil, Trash2, X, Check, Phone, Briefca
 import { motion, AnimatePresence } from "framer-motion";
 import MavaLoader from "../components/MavaLoader";
 
-export default function KelolaKlien() {
+export default function KelolaKlien({ embedded = false }) {
     const [clients, setClients] = useState([]);
     const [loading, setLoading] = useState(true);
 
@@ -186,7 +186,7 @@ export default function KelolaKlien() {
     const filteredClients = clients.filter((client) => client.client_name.toLowerCase().includes(searchTerm.toLowerCase()) || client.company_name.toLowerCase().includes(searchTerm.toLowerCase()));
 
     return (
-        <div className="p-8 space-y-6 min-h-screen relative">
+        <div className={embedded ? "space-y-6 relative" : "p-8 space-y-6 min-h-screen relative"}>
             {/* Header */}
             <div className="flex items-center justify-between">
                 <div>

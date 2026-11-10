@@ -4,7 +4,7 @@ import { Briefcase, Plus, MoreVertical, Pencil, Trash2, X, Check, AlertTriangle 
 import { motion, AnimatePresence } from "framer-motion";
 import MavaLoader from "../components/MavaLoader";
 
-export default function KelolaLayanan() {
+export default function KelolaLayanan({ embedded = false }) {
     const [services, setServices] = useState([]);
     const [loading, setLoading] = useState(true);
 
@@ -172,7 +172,7 @@ export default function KelolaLayanan() {
     };
 
     return (
-        <div className="p-8 space-y-6 min-h-screen relative">
+        <div className={embedded ? "space-y-6 relative" : "p-8 space-y-6 min-h-screen relative"}>
             {/* Header Halaman */}
             <div className="flex items-center justify-between">
                 <div>

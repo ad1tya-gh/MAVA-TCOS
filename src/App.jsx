@@ -1,9 +1,7 @@
 import { useState, useEffect } from "react";
 import Sidebar from "./components/Sidebar";
-import KelolaLayanan from "./pages/KelolaLayanan";
-import KelolaKlien from "./pages/KelolaKlien";
+import DataOperasional from "./pages/DataOperasional";
 import KelolaKaryawan from "./pages/KelolaKaryawan";
-import KelolaRole from "./pages/KelolaRole";
 import KelolaTask from "./pages/KelolaTask";
 import TaskKaryawan from "./pages/TaskKaryawan";
 import Login from "./pages/Login";
@@ -43,7 +41,7 @@ export default function App() {
     const userRole = isManager ? "Manager" : "Karyawan";
 
     // Proteksi Halaman Khusus Manager
-    const managerOnlyTabs = ["karyawan", "posisi", "klien", "layanan", "laporan"];
+    const managerOnlyTabs = ["karyawan", "laporan", "operasional", "posisi", "klien", "layanan"];
     const isAccessDenied = !isManager && managerOnlyTabs.includes(activeTab);
 
     return (
@@ -66,10 +64,11 @@ export default function App() {
                     </div>
                 ) : (
                     <>
-                        {activeTab === "layanan" && <KelolaLayanan />}
-                        {activeTab === "klien" && <KelolaKlien />}
+                        {activeTab === "operasional" && <DataOperasional />}
+                        {activeTab === "posisi" && <DataOperasional defaultTab="posisi" />}
+                        {activeTab === "layanan" && <DataOperasional defaultTab="layanan" />}
+                        {activeTab === "klien" && <DataOperasional defaultTab="klien" />}
                         {activeTab === "karyawan" && <KelolaKaryawan />}
-                        {activeTab === "posisi" && <KelolaRole />}
                         {activeTab === "dashboard" && <Dashboard userId={loggedInUser.user_id} userRole={userRole} />}
                         {activeTab === "laporan" && <Laporan />}
 
@@ -77,7 +76,7 @@ export default function App() {
                         {activeTab === "tasks" && isManager && <KelolaTask managerId={loggedInUser.user_id} />}
                         {activeTab === "tasks" && !isManager && <TaskKaryawan employeeId={loggedInUser.user_id} />}
 
-                        {activeTab !== "layanan" && activeTab !== "klien" && activeTab !== "karyawan" && activeTab !== "posisi" && activeTab !== "tasks" && activeTab !== "dashboard" && activeTab !== "laporan" && (
+                        {activeTab !== "operasional" && activeTab !== "layanan" && activeTab !== "klien" && activeTab !== "karyawan" && activeTab !== "posisi" && activeTab !== "tasks" && activeTab !== "dashboard" && activeTab !== "laporan" && (
                             <div className="p-8">
                                 <h2 className="text-2xl font-bold capitalize">Halaman {activeTab}</h2>
                                 <p className="text-neutral-500 mt-2">Sedang dalam tahap pembuatan...</p>

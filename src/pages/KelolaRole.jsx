@@ -4,7 +4,7 @@ import { CircleUser, Plus, MoreVertical, Pencil, Trash2, X, Check, AlertTriangle
 import { motion, AnimatePresence } from "framer-motion";
 import MavaLoader from "../components/MavaLoader";
 
-export default function KelolaRole() {
+export default function KelolaRole({ embedded = false }) {
     const [roles, setRoles] = useState([]);
     const [loading, setLoading] = useState(true);
 
@@ -172,7 +172,7 @@ export default function KelolaRole() {
     };
 
     return (
-        <div className="p-8 space-y-6 min-h-screen relative">
+        <div className={embedded ? "space-y-6 relative" : "p-8 space-y-6 min-h-screen relative"}>
             {/* Header Halaman */}
             <div className="flex items-center justify-between">
                 <div>

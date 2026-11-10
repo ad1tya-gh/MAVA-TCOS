@@ -145,7 +145,7 @@ export default function Dashboard({ userRole, userId }) {
                             <XAxis dataKey="name" stroke="#737373" fontSize={12} tickLine={false} axisLine={false} />
                             <YAxis stroke="#737373" fontSize={12} tickLine={false} axisLine={false} allowDecimals={false} />
                             <Tooltip cursor={{ fill: "#262626" }} contentStyle={{ backgroundColor: "#171717", borderColor: "#404040", borderRadius: "12px", color: "#fff" }} />
-                            <Bar dataKey="Jumlah Tugas" radius={[6, 6, 0, 0]} barSize={40}>
+                            <Bar dataKey="Jumlah Tugas" radius={[6, 6, 0, 0]} barSize={40} fill="#DB3B96">
                                 {chartData.map((entry, index) => (
                                     <Cell key={`cell-${index}`} fill={isManager ? "#DB3B96" : "#8B5EA8"} />
                                 ))}

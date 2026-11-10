@@ -1,16 +1,15 @@
-import { LayoutDashboard, CheckSquare, Users, Building2, Briefcase, BarChart3, UserRoundCog, LogOut } from "lucide-react";
+import { LayoutDashboard, CheckSquare, Users, BarChart3, Layers, LogOut } from "lucide-react";
 
 // Tambahkan prop 'userRole' untuk menerima status login dari App.jsx
 export default function Sidebar({ activeTab, setActiveTab, userRole, userName, onLogout }) {
     const menuItems = [
         { id: "dashboard", label: "Dashboard", icon: LayoutDashboard, allowed: ["Manager", "Karyawan"] },
         { id: "tasks", label: "Semua Task", icon: CheckSquare, allowed: ["Manager", "Karyawan"] },
-        // Menu di bawah hanya untuk Manager
-        { id: "posisi", label: "Kelola Posisi", icon: UserRoundCog, allowed: ["Manager"] },
+        // Menu khusus Manager
         { id: "karyawan", label: "Kelola Karyawan", icon: Users, allowed: ["Manager"] },
-        { id: "klien", label: "Kelola Klien", icon: Building2, allowed: ["Manager"] },
-        { id: "layanan", label: "Kelola Layanan", icon: Briefcase, allowed: ["Manager"] },
         { id: "laporan", label: "Laporan", icon: BarChart3, allowed: ["Manager"] },
+        // Menu Data Operasional diletakkan di paling bawah untuk kemudahan akses master
+        { id: "operasional", label: "Data Operasional", icon: Layers, allowed: ["Manager"] },
     ];
 
     // Saring menu berdasarkan role yang login
@@ -28,14 +27,14 @@ export default function Sidebar({ activeTab, setActiveTab, userRole, userName, o
                 <nav className="p-4 space-y-1">
                     {visibleMenus.map((item) => {
                         const Icon = item.icon;
-                        const isActive = activeTab === item.id;
+                        const isOperasionalActive = item.id === "operasional" && ["operasional", "posisi", "layanan", "klien"].includes(activeTab);
+                        const isActive = activeTab === item.id || isOperasionalActive;
                         return (
                             <button
                                 key={item.id}
                                 onClick={() => setActiveTab(item.id)}
-                                className={`cursor-pointer w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all active:scale-95 ${
-                                    isActive ? "bg-neutral-800 text-white border-l-4 border-[#DB3B96]" : "text-neutral-400 hover:text-white hover:bg-neutral-800/50"
-                                }`}
+                                className={`cursor-pointer w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all active:scale-95 ${isActive ? "bg-neutral-800 text-white border-l-4 border-[#DB3B96]" : "text-neutral-400 hover:text-white hover:bg-neutral-800/50"
+                                    }`}
                             >
                                 <Icon className={`w-5 h-5 ${isActive ? "text-[#DB3B96]" : "text-neutral-400"}`} />
                                 {item.label}
