@@ -209,7 +209,7 @@ export default function KelolaKlien({ embedded = false }) {
                 </div>
                 <input
                     type="text"
-                    placeholder="Cari nama atau email karyawan..."
+                    placeholder="Cari nama atau email client..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                     className="w-full bg-neutral-900 border border-neutral-800 rounded-xl pl-11 pr-4 py-2.5 text-sm text-white placeholder-neutral-500 focus:outline-none focus:border-[#DB3B96] transition-colors"
